@@ -1,4 +1,4 @@
-// Dados fictícios dos animais
+// Dados fictícios dos animais/fazer depois com dinossauros
 const animals = [
     { name: "Tartaruga", hours: 4, speed: 5, endurance: 60 },
     { name: "Guepardo", hours: 15, speed: 90, endurance: 20 },
