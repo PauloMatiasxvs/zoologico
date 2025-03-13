@@ -11,48 +11,67 @@ const athletes = [
 // Populando a tabela de dados
 function populateTable() {
     const tbody = document.getElementById("data-body");
-    animals.forEach(animal => {
+    tbody.innerHTML = ""; // Limpa antes de preencher
+    athletes.forEach(athlete => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${animal.name}</td>
-            <td>${animal.hours}</td>
-            <td>${animal.speed}</td>
-            <td>${animal.endurance}</td>
+            <td>${athlete.name}</td>
+            <td>${athlete.sex}</td>
+            <td>${athlete.hours}</td>
+            <td>${athlete.speed}</td>
+            <td>${athlete.endurance}</td>
         `;
         tbody.appendChild(row);
     });
 }
-
-// Função para calcular a distância euclidiana (usada no K-Means)
+// Função para calcular distância euclidiana (K-Means)
 function euclideanDistance(point1, point2) {
-    return Math.sqrt(point1.reduce((sum, val, i) => sum + (val - point2[i]) ** 2, 0));
+    let sum = 0;
+    for (let i = 0; i < point1.length; i++) {
+        sum += (point1[i] - point2[i]) ** 2;
+    }
+    return Math.sqrt(sum);
 }
 
 // Implementação manual do K-Means
 function kMeans(data, k, maxIterations = 100) {
-    // Inicializando centroides aleatoriamente
     let centroids = [];
-    for (let i = 0; i < k; i++) {
-        centroids.push(data[Math.floor(Math.random() * data.length)].slice());
+    let usedIndices = new Set();
+    while (centroids.length < k) {
+        let idx = Math.floor(Math.random() * data.length);
+        if (!usedIndices.has(idx)) {
+            centroids.push([...data[idx]]);
+            usedIndices.add(idx);
+        }
     }
 
     let clusters = new Array(data.length);
-    for (let iter = 0; iter < maxIterations; iter++) {
-        // Atribuir cada ponto ao centroide mais próximo
+    let previousClusters = new Array(data.length).fill(-1);
+    let iteration = 0;
+
+    while (iteration < maxIterations) {
         for (let i = 0; i < data.length; i++) {
-            let minDist = Infinity;
-            let clusterIdx = 0;
+            let minDistance = Infinity;
+            let clusterIndex = 0;
             for (let j = 0; j < k; j++) {
-                let dist = euclideanDistance(data[i], centroids[j]);
-                if (dist < minDist) {
-                    minDist = dist;
-                    clusterIdx = j;
+                let distance = euclideanDistance(data[i], centroids[j]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    clusterIndex = j;
                 }
             }
-            clusters[i] = clusterIdx;
+            clusters[i] = clusterIndex;
         }
 
-        // Recalcular centroides
+        let converged = true;
+        for (let i = 0; i < clusters.length; i++) {
+            if (clusters[i] !== previousClusters[i]) {
+                converged = false;
+                break;
+            }
+        }
+        if (converged) break;
+
         let newCentroids = Array(k).fill().map(() => Array(data[0].length).fill(0));
         let counts = Array(k).fill(0);
         for (let i = 0; i < data.length; i++) {
@@ -64,59 +83,56 @@ function kMeans(data, k, maxIterations = 100) {
         }
         for (let j = 0; j < k; j++) {
             if (counts[j] > 0) {
-                newCentroids[j] = newCentroids[j].map(val => val / counts[j]);
-            }
-        }
-
-        // Verificar convergência
-        let converged = true;
-        for (let j = 0; j < k; j++) {
-            if (euclideanDistance(centroids[j], newCentroids[j]) > 0.001) {
-                converged = false;
-                break;
+                for (let dim = 0; dim < data[0].length; dim++) {
+                    newCentroids[j][dim] /= counts[j];
+                }
             }
         }
         centroids = newCentroids;
-        if (converged) break;
+        previousClusters = [...clusters];
+        iteration++;
     }
-    return { clusters, centroids };
+    return { clusters, centroids, iterations: iteration };
 }
 
 // Aprendizagem Não Supervisionada
 function runUnsupervised() {
-    const data = animals.map(a => [a.hours, a.speed, a.endurance]);
-    const { clusters, centroids } = kMeans(data, 3);
+    const data = athletes.map(a => [a.hours, a.speed, a.endurance]);
+    const { clusters, centroids, iterations } = kMeans(data, 3);
 
-    let resultHtml = "<h4>Resultados do Agrupamento:</h4>";
+    let resultHtml = "<h4>Resultados do Agrupamento (K-Means):</h4>";
+    resultHtml += `<p>Número de iterações: ${iterations}</p>`;
     resultHtml += "<ul>";
-    animals.forEach((animal, i) => {
-        resultHtml += `<li>${animal.name}: Grupo ${clusters[i]}</li>`;
+    athletes.forEach((athlete, i) => {
+        let groupName = clusters[i] === 0 ? "Iniciantes" : clusters[i] === 1 ? "Elite" : "Intermediários";
+        resultHtml += `<li>${athlete.name} (${athlete.sex}): ${groupName} (Grupo ${clusters[i]})</li>`;
     });
     resultHtml += "</ul>";
-    resultHtml += "<h4>Centroides:</h4><ul>";
+    resultHtml += "<h4>Centroides Calculados:</h4><ul>";
     centroids.forEach((centroid, i) => {
         resultHtml += `<li>Grupo ${i}: [Horas: ${centroid[0].toFixed(2)}, Velocidade: ${centroid[1].toFixed(2)}, Resistência: ${centroid[2].toFixed(2)}]</li>`;
     });
     resultHtml += "</ul>";
     document.getElementById("unsupervised-results").innerHTML = resultHtml;
 
-    // Gráfico
     const ctx = document.getElementById("unsupervised-chart").getContext("2d");
     new Chart(ctx, {
         type: "scatter",
         data: {
             datasets: [{
-                label: "Animais",
-                data: animals.map((a, i) => ({ x: a.hours, y: a.speed, group: clusters[i] })),
-                backgroundColor: clusters.map(c => ["#e74c3c", "#3498db", "#2ecc71"][c]),
-                pointRadius: 5
+                label: "Atletas",
+                data: athletes.map((a, i) => ({ x: a.hours, y: a.speed })),
+                backgroundColor: clusters.map(c => ["#e57373", "#4fc3f7", "#81c784"][c]),
+                pointRadius: 6,
+                pointHoverRadius: 8
             }]
         },
         options: {
             scales: {
                 x: { title: { display: true, text: "Horas de Treino" } },
                 y: { title: { display: true, text: "Velocidade (km/h)" } }
-            }
+            },
+            plugins: { legend: { display: true } }
         }
     });
 }
@@ -131,33 +147,48 @@ function linearRegression(x, y) {
         sumXY += x[i] * y[i];
         sumXX += x[i] * x[i];
     }
-    const a = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const b = (sumY - a * sumX) / n;
-    return { a, b };
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX); // a
+    const intercept = (sumY - slope * sumX) / n; // b
+    return { slope, intercept };
 }
 
 // Aprendizagem Supervisionada
 function runSupervised() {
-    const x = animals.map(a => a.hours);
-    const y = animals.map(a => a.speed);
-    const { a, b } = linearRegression(x, y);
+    const x = athletes.map(a => a.hours);
+    const y = athletes.map(a => a.speed);
+    const { slope, intercept } = linearRegression(x, y);
 
-    let resultHtml = `<h4>Equação: Y = ${a.toFixed(2)}X + ${b.toFixed(2)}</h4>`;
+    let resultHtml = "<h4>Cálculo da Regressão Linear:</h4>";
+    resultHtml += `<p>Equação: Velocidade = ${slope.toFixed(2)} × Horas + ${intercept.toFixed(2)}</p>`;
     resultHtml += "<p>Previsões:</p><ul>";
-    resultHtml += `<li>8 horas: ${(a * 8 + b).toFixed(2)} km/h</li>`;
-    resultHtml += `<li>13 horas: ${(a * 13 + b).toFixed(2)} km/h</li>`;
+    const pred8 = slope * 8 + intercept;
+    const pred13 = slope * 13 + intercept;
+    resultHtml += `<li>8 horas: ${pred8.toFixed(2)} km/h</li>`;
+    resultHtml += `<li>13 horas: ${pred13.toFixed(2)} km/h</li>`;
     resultHtml += "</ul>";
     document.getElementById("supervised-results").innerHTML = resultHtml;
 
-    // Gráfico
     const ctx = document.getElementById("supervised-chart").getContext("2d");
-    const regressionLine = x.map(xi => ({ x: xi, y: a * xi + b }));
+    const regressionPoints = x.map(xi => ({ x: xi, y: slope * xi + intercept }));
     new Chart(ctx, {
         type: "scatter",
         data: {
             datasets: [
-                { label: "Dados", data: animals.map(a => ({ x: a.hours, y: a.speed })), backgroundColor: "#e74c3c" },
-                { label: "Regressão", type: "line", data: regressionLine, borderColor: "#3498db", fill: false }
+                {
+                    label: "Dados Reais",
+                    data: athletes.map(a => ({ x: a.hours, y: a.speed })),
+                    backgroundColor: "#e57373",
+                    pointRadius: 6
+                },
+                {
+                    label: "Linha de Regressão",
+                    type: "line",
+                    data: regressionPoints,
+                    borderColor: "#0288d1",
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0
+                }
             ]
         },
         options: {
@@ -171,45 +202,44 @@ function runSupervised() {
 
 // Testes Alternativos
 function runTests() {
-    // Teste 1: Agrupamento só por velocidade
-    const speedData = animals.map(a => [a.speed]);
+    const speedData = athletes.map(a => [a.speed]);
     const { clusters: speedClusters } = kMeans(speedData, 3);
 
-    // Teste 2: Regressão com horas e resistência
-    const xEndurance = animals.map(a => a.hours);
-    const yEndurance = animals.map(a => a.endurance);
-    const { a: aEnd, b: bEnd } = linearRegression(xEndurance, yEndurance);
+    const xEndurance = athletes.map(a => a.hours);
+    const yEndurance = athletes.map(a => a.endurance);
+    const { slope: slopeEnd, intercept: interceptEnd } = linearRegression(xEndurance, yEndurance);
 
     let resultHtml = "<h4>Teste 1: Agrupamento por Velocidade</h4><ul>";
-    animals.forEach((a, i) => {
-        resultHtml += `<li>${a.name}: Grupo ${speedClusters[i]}</li>`;
+    athletes.forEach((a, i) => {
+        let groupName = speedClusters[i] === 0 ? "Baixa" : speedClusters[i] === 1 ? "Alta" : "Média";
+        resultHtml += `<li>${a.name} (${a.sex}): ${groupName} (Grupo ${speedClusters[i]})</li>`;
     });
     resultHtml += "</ul>";
-    resultHtml += `<h4>Teste 2: Regressão com Resistência</h4>`;
-    resultHtml += `<p>Equação: Y = ${aEnd.toFixed(2)}X + ${bEnd.toFixed(2)}</p>`;
-    resultHtml += `<p>Previsão para 10 horas: ${(aEnd * 10 + bEnd).toFixed(2)} min</p>`;
+    resultHtml += "<h4>Teste 2: Regressão com Resistência</h4>";
+    resultHtml += `<p>Equação: Resistência = ${slopeEnd.toFixed(2)} × Horas + ${interceptEnd.toFixed(2)}</p>`;
+    resultHtml += `<p>Previsão para 10 horas: ${(slopeEnd * 10 + interceptEnd).toFixed(2)} min</p>`;
     document.getElementById("test-results").innerHTML = resultHtml;
 }
 
-// Previsão de Novo Animal
-function predictNewAnimal() {
-    const hours = parseFloat(document.getElementById("new-hours").value);
-    const endurance = parseFloat(document.getElementById("new-endurance").value);
-    const x = animals.map(a => a.hours);
-    const y = animals.map(a => a.speed);
-    const { a, b } = linearRegression(x, y);
+// Previsão de Novo Atleta
+function predictNewAthlete() {
+    const hours = parseFloat(document.getElementById("new-hours").value) || 0;
+    const endurance = parseFloat(document.getElementById("new-endurance").value) || 0;
+    const x = athletes.map(a => a.hours);
+    const y = athletes.map(a => a.speed);
+    const { slope, intercept } = linearRegression(x, y);
 
-    const predictedSpeed = a * hours + b;
-    const data = animals.map(a => [a.hours, a.speed, a.endurance]);
-    const { clusters } = kMeans(data, 3);
-    const newData = [[hours, predictedSpeed, endurance]];
-    const { clusters: newCluster } = kMeans([...data, ...newData], 3);
+    const predictedSpeed = slope * hours + intercept;
+    const data = athletes.map(a => [a.hours, a.speed, a.endurance]);
+    const newDataPoint = [hours, predictedSpeed, endurance];
+    const combinedData = [...data, newDataPoint];
+    const { clusters } = kMeans(combinedData, 3);
 
-    document.getElementById("prediction-results").innerHTML = `
-        <h4>Resultado:</h4>
-        <p>Velocidade prevista: ${predictedSpeed.toFixed(2)} km/h</p>
-        <p>Grupo: ${newCluster[newCluster.length - 1]}</p>
-    `;
+    let resultHtml = "<h4>Previsão do Novo Atleta:</h4>";
+    resultHtml += `<p>Horas: ${hours}, Resistência: ${endurance}</p>`;
+    resultHtml += `<p>Velocidade Prevista: ${predictedSpeed.toFixed(2)} km/h</p>`;
+    resultHtml += `<p>Grupo Previsto: ${clusters[clusters.length - 1]} (${clusters[clusters.length - 1] === 0 ? "Iniciantes" : clusters[clusters.length - 1] === 1 ? "Elite" : "Intermediários"})</p>`;
+    document.getElementById("prediction-results").innerHTML = resultHtml;
 }
 
 // Inicialização
