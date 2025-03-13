@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos personalizados podem ser adicionados aqui */
+@layer base {
+    h1, h2 {
+        @apply font-bold;
+    }
+}

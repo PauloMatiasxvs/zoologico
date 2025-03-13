@@ -1,29 +1,32 @@
-// Dados fictícios dos atletas com nomes reais e sexo aleatório
-const athletes = [
-    { name: "Francisco Wallison", sex: "Masculino", hours: 4, speed: 12, endurance: 60 },
-    { name: "Kayron Santos", sex: "Feminino", hours: 15, speed: 28, endurance: 25 },
-    { name: "Gustavo Wagner", sex: "Masculino", hours: 10, speed: 20, endurance: 45 },
-    { name: "Levi Matias", sex: "Feminino", hours: 6, speed: 15, endurance: 35 },
-    { name: "Alex Adrian", sex: "Masculino", hours: 12, speed: 23, endurance: 50 },
-    { name: "Clara Mendes", sex: "Feminino", hours: 14, speed: 26, endurance: 30 }
+// Dados fictícios dos jogadores de basquete (todos masculinos)
+const players = [
+    { name: "Francisco Wallison", sex: "Masculino", hours: 4, speed: 12, endurance: 60, accuracy: 70 },
+    { name: "Kayron Santos", sex: "Masculino", hours: 15, speed: 28, endurance: 25, accuracy: 85 },
+    { name: "Gustavo Wagner", sex: "Masculino", hours: 10, speed: 20, endurance: 45, accuracy: 78 },
+    { name: "Levi Matias", sex: "Masculino", hours: 6, speed: 15, endurance: 35, accuracy: 65 },
+    { name: "Alex Adrian", sex: "Masculino", hours: 12, speed: 23, endurance: 50, accuracy: 80 },
+    { name: "João Pedro", sex: "Masculino", hours: 14, speed: 26, endurance: 30, accuracy: 82 }
 ];
 
 // Populando a tabela de dados
 function populateTable() {
     const tbody = document.getElementById("data-body");
-    tbody.innerHTML = ""; // Limpa antes de preencher
-    athletes.forEach(athlete => {
+    tbody.innerHTML = "";
+    players.forEach(player => {
         const row = document.createElement("tr");
+        row.className = "border-b border-gray-700 hover:bg-gray-700 transition";
         row.innerHTML = `
-            <td>${athlete.name}</td>
-            <td>${athlete.sex}</td>
-            <td>${athlete.hours}</td>
-            <td>${athlete.speed}</td>
-            <td>${athlete.endurance}</td>
+            <td class="p-3">${player.name}</td>
+            <td class="p-3">${player.sex}</td>
+            <td class="p-3">${player.hours}</td>
+            <td class="p-3">${player.speed}</td>
+            <td class="p-3">${player.endurance}</td>
+            <td class="p-3">${player.accuracy}</td>
         `;
         tbody.appendChild(row);
     });
 }
+
 // Função para calcular distância euclidiana (K-Means)
 function euclideanDistance(point1, point2) {
     let sum = 0;
@@ -95,22 +98,22 @@ function kMeans(data, k, maxIterations = 100) {
     return { clusters, centroids, iterations: iteration };
 }
 
-// Aprendizagem Não Supervisionada
+// Aprendizagem Não Supervisionada - Posição no Time
 function runUnsupervised() {
-    const data = athletes.map(a => [a.hours, a.speed, a.endurance]);
+    const data = players.map(p => [p.speed, p.endurance, p.accuracy]);
     const { clusters, centroids, iterations } = kMeans(data, 3);
 
-    let resultHtml = "<h4>Resultados do Agrupamento (K-Means):</h4>";
-    resultHtml += `<p>Número de iterações: ${iterations}</p>`;
-    resultHtml += "<ul>";
-    athletes.forEach((athlete, i) => {
-        let groupName = clusters[i] === 0 ? "Iniciantes" : clusters[i] === 1 ? "Elite" : "Intermediários";
-        resultHtml += `<li>${athlete.name} (${athlete.sex}): ${groupName} (Grupo ${clusters[i]})</li>`;
+    let resultHtml = "<h3 class='text-lg font-semibold text-orange-300'>Agrupamento por Posição:</h3>";
+    resultHtml += `<p class='text-gray-300'>Iterações: ${iterations}</p>`;
+    resultHtml += "<ul class='list-disc pl-5 text-gray-200'>";
+    players.forEach((player, i) => {
+        let position = clusters[i] === 0 ? "Pivô" : clusters[i] === 1 ? "Armador" : "Ala";
+        resultHtml += `<li>${player.name}: ${position} (Grupo ${clusters[i]})</li>`;
     });
     resultHtml += "</ul>";
-    resultHtml += "<h4>Centroides Calculados:</h4><ul>";
+    resultHtml += "<h3 class='text-lg font-semibold text-orange-300 mt-4'>Centroides:</h3><ul class='list-disc pl-5 text-gray-200'>";
     centroids.forEach((centroid, i) => {
-        resultHtml += `<li>Grupo ${i}: [Horas: ${centroid[0].toFixed(2)}, Velocidade: ${centroid[1].toFixed(2)}, Resistência: ${centroid[2].toFixed(2)}]</li>`;
+        resultHtml += `<li>Grupo ${i}: [Velocidade: ${centroid[0].toFixed(2)}, Resistência: ${centroid[1].toFixed(2)}, Precisão: ${centroid[2].toFixed(2)}]</li>`;
     });
     resultHtml += "</ul>";
     document.getElementById("unsupervised-results").innerHTML = resultHtml;
@@ -120,17 +123,17 @@ function runUnsupervised() {
         type: "scatter",
         data: {
             datasets: [{
-                label: "Atletas",
-                data: athletes.map((a, i) => ({ x: a.hours, y: a.speed })),
-                backgroundColor: clusters.map(c => ["#e57373", "#4fc3f7", "#81c784"][c]),
+                label: "Jogadores",
+                data: players.map((p, i) => ({ x: p.speed, y: p.accuracy })),
+                backgroundColor: clusters.map(c => ["#ff5722", "#0288d1", "#4caf50"][c]),
                 pointRadius: 6,
                 pointHoverRadius: 8
             }]
         },
         options: {
             scales: {
-                x: { title: { display: true, text: "Horas de Treino" } },
-                y: { title: { display: true, text: "Velocidade (km/h)" } }
+                x: { title: { display: true, text: "Velocidade (km/h)" } },
+                y: { title: { display: true, text: "Precisão (%)" } }
             },
             plugins: { legend: { display: true } }
         }
@@ -144,27 +147,27 @@ function linearRegression(x, y) {
     for (let i = 0; i < n; i++) {
         sumX += x[i];
         sumY += y[i];
-        sumXY += x[i] * y[i];
+        sumIND = x[i] * y[i];
         sumXX += x[i] * x[i];
     }
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX); // a
-    const intercept = (sumY - slope * sumX) / n; // b
+    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - slope * sumX) / n;
     return { slope, intercept };
 }
 
-// Aprendizagem Supervisionada
+// Aprendizagem Supervisionada - Série do Time
 function runSupervised() {
-    const x = athletes.map(a => a.hours);
-    const y = athletes.map(a => a.speed);
+    const x = players.map(p => p.hours);
+    const y = players.map(p => p.speed * 0.4 + p.accuracy * 0.6); // Pontuação composta
     const { slope, intercept } = linearRegression(x, y);
 
-    let resultHtml = "<h4>Cálculo da Regressão Linear:</h4>";
-    resultHtml += `<p>Equação: Velocidade = ${slope.toFixed(2)} × Horas + ${intercept.toFixed(2)}</p>`;
-    resultHtml += "<p>Previsões:</p><ul>";
+    let resultHtml = "<h3 class='text-lg font-semibold text-orange-300'>Regressão para Série do Time:</h3>";
+    resultHtml += `<p class='text-gray-300'>Equação: Pontuação = ${slope.toFixed(2)} × Horas + ${intercept.toFixed(2)}</p>`;
+    resultHtml += "<p class='mt-2 text-gray-300'>Previsões:</p><ul class='list-disc pl-5 text-gray-200'>";
     const pred8 = slope * 8 + intercept;
     const pred13 = slope * 13 + intercept;
-    resultHtml += `<li>8 horas: ${pred8.toFixed(2)} km/h</li>`;
-    resultHtml += `<li>13 horas: ${pred13.toFixed(2)} km/h</li>`;
+    resultHtml += `<li>8 horas: ${pred8.toFixed(2)} pontos (${pred8 > 70 ? "Série A" : pred8 > 50 ? "Série B" : "Série C"})</li>`;
+    resultHtml += `<li>13 horas: ${pred13.toFixed(2)} pontos (${pred13 > 70 ? "Série A" : pred13 > 50 ? "Série B" : "Série C"})</li>`;
     resultHtml += "</ul>";
     document.getElementById("supervised-results").innerHTML = resultHtml;
 
@@ -175,26 +178,25 @@ function runSupervised() {
         data: {
             datasets: [
                 {
-                    label: "Dados Reais",
-                    data: athletes.map(a => ({ x: a.hours, y: a.speed })),
-                    backgroundColor: "#e57373",
+                    label: "Pontuação Real",
+                    data: players.map(p => ({ x: p.hours, y: p.speed * 0.4 + p.accuracy * 0.6 })),
+                    backgroundColor: "#ff5722",
                     pointRadius: 6
                 },
                 {
-                    label: "Linha de Regressão",
+                    label: "Regressão",
                     type: "line",
                     data: regressionPoints,
                     borderColor: "#0288d1",
                     borderWidth: 2,
-                    fill: false,
-                    tension: 0
+                    fill: false
                 }
             ]
         },
         options: {
             scales: {
                 x: { title: { display: true, text: "Horas de Treino" } },
-                y: { title: { display: true, text: "Velocidade (km/h)" } }
+                y: { title: { display: true, text: "Pontuação" } }
             }
         }
     });
@@ -202,43 +204,45 @@ function runSupervised() {
 
 // Testes Alternativos
 function runTests() {
-    const speedData = athletes.map(a => [a.speed]);
-    const { clusters: speedClusters } = kMeans(speedData, 3);
+    const accuracyData = players.map(p => [p.accuracy]);
+    const { clusters: accuracyClusters } = kMeans(accuracyData, 3);
 
-    const xEndurance = athletes.map(a => a.hours);
-    const yEndurance = athletes.map(a => a.endurance);
+    const xEndurance = players.map(p => p.hours);
+    const yEndurance = players.map(p => p.endurance);
     const { slope: slopeEnd, intercept: interceptEnd } = linearRegression(xEndurance, yEndurance);
 
-    let resultHtml = "<h4>Teste 1: Agrupamento por Velocidade</h4><ul>";
-    athletes.forEach((a, i) => {
-        let groupName = speedClusters[i] === 0 ? "Baixa" : speedClusters[i] === 1 ? "Alta" : "Média";
-        resultHtml += `<li>${a.name} (${a.sex}): ${groupName} (Grupo ${speedClusters[i]})</li>`;
+    let resultHtml = "<h3 class='text-lg font-semibold text-orange-300'>Teste 1: Agrupamento por Precisão</h3><ul class='list-disc pl-5 text-gray-200'>";
+    players.forEach((p, i) => {
+        let level = accuracyClusters[i] === 0 ? "Baixa" : accuracyClusters[i] === 1 ? "Alta" : "Média";
+        resultHtml += `<li>${p.name}: ${level} (Grupo ${accuracyClusters[i]})</li>`;
     });
     resultHtml += "</ul>";
-    resultHtml += "<h4>Teste 2: Regressão com Resistência</h4>";
-    resultHtml += `<p>Equação: Resistência = ${slopeEnd.toFixed(2)} × Horas + ${interceptEnd.toFixed(2)}</p>`;
-    resultHtml += `<p>Previsão para 10 horas: ${(slopeEnd * 10 + interceptEnd).toFixed(2)} min</p>`;
+    resultHtml += "<h3 class='text-lg font-semibold text-orange-300 mt-4'>Teste 2: Regressão com Resistência</h3>";
+    resultHtml += `<p class='text-gray-300'>Equação: Resistência = ${slopeEnd.toFixed(2)} × Horas + ${interceptEnd.toFixed(2)}</p>`;
+    resultHtml += `<p class='text-gray-300'>Previsão para 10 horas: ${(slopeEnd * 10 + interceptEnd).toFixed(2)} min</p>`;
     document.getElementById("test-results").innerHTML = resultHtml;
 }
 
-// Previsão de Novo Atleta
-function predictNewAthlete() {
+// Previsão de Novo Jogador
+function predictNewPlayer() {
     const hours = parseFloat(document.getElementById("new-hours").value) || 0;
     const endurance = parseFloat(document.getElementById("new-endurance").value) || 0;
-    const x = athletes.map(a => a.hours);
-    const y = athletes.map(a => a.speed);
+    const accuracy = parseFloat(document.getElementById("new-accuracy").value) || 0;
+    const x = players.map(p => p.hours);
+    const y = players.map(p => p.speed * 0.4 + p.accuracy * 0.6);
     const { slope, intercept } = linearRegression(x, y);
 
-    const predictedSpeed = slope * hours + intercept;
-    const data = athletes.map(a => [a.hours, a.speed, a.endurance]);
-    const newDataPoint = [hours, predictedSpeed, endurance];
+    const predictedScore = slope * hours + intercept;
+    const predictedSpeed = (predictedScore - accuracy * 0.6) / 0.4; // Aproximação
+    const data = players.map(p => [p.speed, p.endurance, p.accuracy]);
+    const newDataPoint = [predictedSpeed, endurance, accuracy];
     const combinedData = [...data, newDataPoint];
     const { clusters } = kMeans(combinedData, 3);
 
-    let resultHtml = "<h4>Previsão do Novo Atleta:</h4>";
-    resultHtml += `<p>Horas: ${hours}, Resistência: ${endurance}</p>`;
-    resultHtml += `<p>Velocidade Prevista: ${predictedSpeed.toFixed(2)} km/h</p>`;
-    resultHtml += `<p>Grupo Previsto: ${clusters[clusters.length - 1]} (${clusters[clusters.length - 1] === 0 ? "Iniciantes" : clusters[clusters.length - 1] === 1 ? "Elite" : "Intermediários"})</p>`;
+    let resultHtml = "<h3 class='text-lg font-semibold text-orange-300'>Previsão do Novo Jogador:</h3>";
+    resultHtml += `<p class='text-gray-300'>Horas: ${hours}, Resistência: ${endurance}, Precisão: ${accuracy}</p>`;
+    resultHtml += `<p class='text-gray-300'>Pontuação Prevista: ${predictedScore.toFixed(2)} (${predictedScore > 70 ? "Série A" : predictedScore > 50 ? "Série B" : "Série C"})</p>`;
+    resultHtml += `<p class='text-gray-300'>Posição Prevista: ${clusters[clusters.length - 1] === 0 ? "Pivô" : clusters[clusters.length - 1] === 1 ? "Armador" : "Ala"}</p>`;
     document.getElementById("prediction-results").innerHTML = resultHtml;
 }
 

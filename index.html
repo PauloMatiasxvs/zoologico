@@ -3,58 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centro de Treinamento - Classificação de Atletas</title>
+    <title>Centro de Treinamento de Basquete</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <div class="container">
-        <h1>Centro de Treinamento Esportivo</h1>
-        <h2>Classificação de Atletas com Machine Learning</h2>
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 min-h-screen text-gray-100 font-sans">
+    <header class="bg-orange-600 p-6 shadow-lg">
+        <h1 class="text-4xl font-extrabold text-center text-white">Centro de Treinamento de Basquete</h1>
+        <p class="text-xl text-center mt-2">Análise Avançada com Machine Learning</p>
+    </header>
 
-        <section id="data-section">
-            <h3>Dados dos Atletas</h3>
-            <table id="data-table">
-                <thead>
-                    <tr>
-                        <th>Atleta</th>
-                        <th>Sexo</th>
-                        <th>Horas de Treino</th>
-                        <th>Velocidade (km/h)</th>
-                        <th>Resistência (min)</th>
-                    </tr>
-                </thead>
-                <tbody id="data-body"></tbody>
-            </table>
+    <main class="container mx-auto p-6 max-w-6xl">
+        <section id="data-section" class="mb-10 bg-gray-800 p-6 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Dados dos Jogadores</h2>
+            <div class="overflow-x-auto">
+                <table id="data-table" class="w-full text-center border-collapse text-sm md:text-base">
+                    <thead>
+                        <tr class="bg-orange-500 text-white">
+                            <th class="p-3">Jogador</th>
+                            <th class="p-3">Sexo</th>
+                            <th class="p-3">Horas de Treino</th>
+                            <th class="p-3">Velocidade (km/h)</th>
+                            <th class="p-3">Resistência (min)</th>
+                            <th class="p-3">Precisão (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="data-body" class="text-gray-200"></tbody>
+                </table>
+            </div>
         </section>
 
-        <section id="unsupervised-section">
-            <h3>Aprendizagem Não Supervisionada</h3>
-            <button onclick="runUnsupervised()">Executar Agrupamento</button>
-            <div id="unsupervised-results"></div>
-            <canvas id="unsupervised-chart" width="400" height="300"></canvas>
+        <section id="unsupervised-section" class="mb-10 bg-gray-800 p-6 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Posição no Time (Não Supervisionado)</h2>
+            <button onclick="runUnsupervised()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Executar Agrupamento</button>
+            <div id="unsupervised-results" class="mt-4"></div>
+            <canvas id="unsupervised-chart" class="mt-6 bg-white rounded-lg" width="400" height="300"></canvas>
         </section>
 
-        <section id="supervised-section">
-            <h3>Aprendizagem Supervisionada</h3>
-            <button onclick="runSupervised()">Executar Regressão</button>
-            <div id="supervised-results"></div>
-            <canvas id="supervised-chart" width="400" height="300"></canvas>
+        <section id="supervised-section" class="mb-10 bg-gray-800 p-6 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Série do Time (Supervisado)</h2>
+            <button onclick="runSupervised()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Executar Regressão</button>
+            <div id="supervised-results" class="mt-4"></div>
+            <canvas id="supervised-chart" class="mt-6 bg-white rounded-lg" width="400" height="300"></canvas>
         </section>
 
-        <section id="test-section">
-            <h3>Testes Alternativos</h3>
-            <button onclick="runTests()">Executar Testes</button>
-            <div id="test-results"></div>
+        <section id="test-section" class="mb-10 bg-gray-800 p-6 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Testes Alternativos</h2>
+            <button onclick="runTests()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Executar Testes</button>
+            <div id="test-results" class="mt-4"></div>
         </section>
 
-        <section id="prediction-section">
-            <h3>Prever Novo Atleta</h3>
-            <input type="number" id="new-hours" placeholder="Horas de Treino" min="0">
-            <input type="number" id="new-endurance" placeholder="Resistência (min)" min="0">
-            <button onclick="predictNewAthlete()">Prever</button>
-            <div id="prediction-results"></div>
+        <section id="prediction-section" class="mb-10 bg-gray-800 p-6 rounded-xl shadow-md">
+            <h2 class="text-2xl font-bold text-orange-400 mb-4">Prever Novo Jogador</h2>
+            <div class="flex flex-wrap gap-4 mb-4">
+                <input type="number" id="new-hours" placeholder="Horas de Treino" min="0" class="p-2 bg-gray-700 border border-gray-600 rounded-lg w-32 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <input type="number" id="new-endurance" placeholder="Resistência (min)" min="0" class="p-2 bg-gray-700 border border-gray-600 rounded-lg w-32 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <input type="number" id="new-accuracy" placeholder="Precisão (%)" min="0" max="100" class="p-2 bg-gray-700 border border-gray-600 rounded-lg w-32 focus:outline-none focus:ring-2 focus:ring-orange-500">
+            </div>
+            <button onclick="predictNewPlayer()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-300">Prever</button>
+            <div id="prediction-results" class="mt-4"></div>
         </section>
-    </div>
+    </main>
+
+    <footer class="bg-gray-900 p-4 text-center text-gray-400">
+        <p>Desenvolvido com Tailwind CSS e Machine Learning - 2025</p>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
