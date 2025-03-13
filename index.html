@@ -12,11 +12,12 @@
         <h2>Classificação de Atletas com Machine Learning</h2>
 
         <section id="data-section">
-            <h3>Dados dos Animais</h3>
+            <h3>Dados dos Atletas</h3>
             <table id="data-table">
                 <thead>
                     <tr>
-                        <th>Animal</th>
+                        <th>Atleta</th>
+                        <th>Sexo</th>
                         <th>Horas de Treino</th>
                         <th>Velocidade (km/h)</th>
                         <th>Resistência (min)</th>
@@ -47,13 +48,14 @@
         </section>
 
         <section id="prediction-section">
-            <h3>Prever Novo Animal</h3>
+            <h3>Prever Novo Atleta</h3>
             <input type="number" id="new-hours" placeholder="Horas de Treino" min="0">
             <input type="number" id="new-endurance" placeholder="Resistência (min)" min="0">
-            <button onclick="predictNewAnimal()">Prever</button>
+            <button onclick="predictNewAthlete()">Prever</button>
             <div id="prediction-results"></div>
         </section>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

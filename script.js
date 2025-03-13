@@ -1,11 +1,11 @@
-// Dados fictícios dos animais/fazer depois com dinossauros
-const animals = [
-    { name: "Tartaruga", hours: 4, speed: 5, endurance: 60 },
-    { name: "Guepardo", hours: 15, speed: 90, endurance: 20 },
-    { name: "Cavalo", hours: 10, speed: 50, endurance: 45 },
-    { name: "Coelho", hours: 6, speed: 20, endurance: 30 },
-    { name: "Lobo", hours: 12, speed: 60, endurance: 50 },
-    { name: "Águia", hours: 14, speed: 80, endurance: 25 }
+// Dados fictícios dos atletas com nomes reais e sexo aleatório
+const athletes = [
+    { name: "Francisco Wallison", sex: "Masculino", hours: 4, speed: 12, endurance: 60 },
+    { name: "Kayron Santos", sex: "Feminino", hours: 15, speed: 28, endurance: 25 },
+    { name: "Gustavo Wagner", sex: "Masculino", hours: 10, speed: 20, endurance: 45 },
+    { name: "Levi Matias", sex: "Feminino", hours: 6, speed: 15, endurance: 35 },
+    { name: "Alex Adrian", sex: "Masculino", hours: 12, speed: 23, endurance: 50 },
+    { name: "Clara Mendes", sex: "Feminino", hours: 14, speed: 26, endurance: 30 }
 ];
 
 // Populando a tabela de dados
