@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoológico de Competição - Classificação de Animais</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Zoológico de Competição</h1>
+        <h2>Classificação de Animais com Machine Learning</h2>
+
+        <section id="data-section">
+            <h3>Dados dos Animais</h3>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Animal</th>
+                        <th>Horas de Treino</th>
+                        <th>Velocidade (km/h)</th>
+                        <th>Resistência (min)</th>
+                    </tr>
+                </thead>
+                <tbody id="data-body"></tbody>
+            </table>
+        </section>
+
+        <section id="unsupervised-section">
+            <h3>Aprendizagem Não Supervisionada</h3>
+            <button onclick="runUnsupervised()">Executar Agrupamento</button>
+            <div id="unsupervised-results"></div>
+            <canvas id="unsupervised-chart" width="400" height="300"></canvas>
+        </section>
+
+        <section id="supervised-section">
+            <h3>Aprendizagem Supervisionada</h3>
+            <button onclick="runSupervised()">Executar Regressão</button>
+            <div id="supervised-results"></div>
+            <canvas id="supervised-chart" width="400" height="300"></canvas>
+        </section>
+
+        <section id="test-section">
+            <h3>Testes Alternativos</h3>
+            <button onclick="runTests()">Executar Testes</button>
+            <div id="test-results"></div>
+        </section>
+
+        <section id="prediction-section">
+            <h3>Prever Novo Animal</h3>
+            <input type="number" id="new-hours" placeholder="Horas de Treino" min="0">
+            <input type="number" id="new-endurance" placeholder="Resistência (min)" min="0">
+            <button onclick="predictNewAnimal()">Prever</button>
+            <div id="prediction-results"></div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
